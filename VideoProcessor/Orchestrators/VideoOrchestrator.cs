@@ -18,8 +18,8 @@ namespace VideoProcessor.Orchestrators
         /// <param name="context">An <see cref="IDurableOrchestrationContext"/></param> that manages the workflow
         /// <param name="log">The logging of type <see cref="Log.ILogger."/></param>
         /// <returns>An output DTO of type <see cref="VideoLocations"/></returns>
-        [FunctionName(nameof(ProcessRawVideoOrchestrator))]
-        public static async Task<VideoLocations> ProcessRawVideoOrchestrator(
+        [FunctionName(nameof(ProcessRawVideo))]
+        public static async Task<VideoLocations> ProcessRawVideo(
             [OrchestrationTrigger] IDurableOrchestrationContext context,
             Log.ILogger log)
         {
@@ -27,7 +27,7 @@ namespace VideoProcessor.Orchestrators
             var videoLocation = context.GetInput<string>();
 
             log = context.CreateReplaySafeLogger(log);
-            log.LogInformation($"{nameof(ProcessRawVideoOrchestrator)} has started, input was found to be valid");
+            log.LogInformation($"{nameof(ProcessRawVideo)} has started, input was found to be valid");
 
             var transcodedLocation = await context.CallActivityAsync<string>("TranscodeVideo", videoLocation);
 
