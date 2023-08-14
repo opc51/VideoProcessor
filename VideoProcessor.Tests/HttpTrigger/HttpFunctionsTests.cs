@@ -5,7 +5,8 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.WebJobs.Extensions.DurableTask;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Primitives;
-using Moq;
+using NSubstitute;
+using NSubstitute.ReceivedExtensions;
 
 namespace VideoProcessor.Tests.HttpTrigger
 {
@@ -17,23 +18,21 @@ namespace VideoProcessor.Tests.HttpTrigger
             const string ORCHESTRATORNAME = "ProcessRawVideoOrchestrator";
             const string INSTANCEID = "03488157-3ddc-4aac-848b-c5fbe4789555";
 
-            var loggerMoq = new Mock<ILogger>();
-            var starterMOQ = new Mock<IDurableClient>();
+            var logger = Substitute.For<ILogger>(); ;
+            var starter = Substitute.For<IDurableClient>();
 
-            var requestMock = new Mock<HttpRequest>();
-            requestMock
-                .Setup(r => r.Query)
-                .Returns(new QueryCollection());
+            var request = Substitute.For<HttpRequest>();
+            request.Query.Returns(new QueryCollection());
 
             var result = await HttpFunctions.VideoHttpFunctions.Run(
-                requestMock.Object,
-                starterMOQ.Object,
-                loggerMoq.Object);
+                request,
+                starter,
+                logger);
 
             result.Should().BeOfType<BadRequestObjectResult>();
 
-            starterMOQ.Verify(x => x.StartNewAsync(ORCHESTRATORNAME, null, It.IsAny<string>()), Times.Never);
-            starterMOQ.Verify(x => x.CreateCheckStatusResponse(It.IsAny<HttpRequest>(), INSTANCEID, false), Times.Never);
+            await starter.DidNotReceive().StartNewAsync(ORCHESTRATORNAME, string.Empty, Arg.Any<string>());
+            starter.DidNotReceive().CreateCheckStatusResponse(Arg.Any<HttpRequest>(), INSTANCEID, false);
         }
 
 
@@ -43,28 +42,22 @@ namespace VideoProcessor.Tests.HttpTrigger
             const string ORCHESTRATORNAME = "ProcessRawVideoOrchestrator";
             const string INSTANCEID = "03488157-3ddc-4aac-848b-c5fbe4789555";
 
-            var loggerMoq = new Mock<ILogger>();
-            var starterMOQ = new Mock<IDurableClient>();
+            var logger = Substitute.For<ILogger>();
+            var starter = Substitute.For<IDurableClient>();
 
-            var requestMock = new Mock<HttpRequest>();
-
-            var queryStringCollection = new Dictionary<string, StringValues> {
-                { "video", "" }
-            };
-
-            requestMock
-                .Setup(r => r.Query)
+            var request = Substitute.For<HttpRequest>();
+            request
+                .Query
                 .Returns(new QueryCollection());
 
             var result = await HttpFunctions.VideoHttpFunctions.Run(
-                requestMock.Object,
-                starterMOQ.Object,
-                loggerMoq.Object);
+                request,
+                starter,
+                logger);
 
             result.Should().BeOfType<BadRequestObjectResult>();
-
-            starterMOQ.Verify(x => x.StartNewAsync(ORCHESTRATORNAME, null, It.IsAny<string>()), Times.Never);
-            starterMOQ.Verify(x => x.CreateCheckStatusResponse(It.IsAny<HttpRequest>(), INSTANCEID, false), Times.Never);
+            await starter.DidNotReceive().StartNewAsync(ORCHESTRATORNAME, string.Empty, Arg.Any<string>());
+            starter.DidNotReceive().CreateCheckStatusResponse(Arg.Any<HttpRequest>(), INSTANCEID, false);
         }
 
 
@@ -74,39 +67,37 @@ namespace VideoProcessor.Tests.HttpTrigger
             const string ORCHESTRATORNAME = "ProcessRawVideoOrchestrator";
             const string INSTANCEID = "03488157-3ddc-4aac-848b-c5fbe4789555";
 
-            var loggerMoq = new Mock<ILogger>();
-            var starterMOQ = new Mock<IDurableClient>();
+            var logger = Substitute.For <ILogger>();
+            var starter = Substitute.For<IDurableClient>();
 
-            var requestMock = new Mock<HttpRequest>();
+            var request = Substitute.For<HttpRequest>();
             
             var queryStringCollection = new Dictionary<string, StringValues> { 
                 { "video", "MyVideo" } 
             };
 
-            requestMock
-                .Setup(r => r.Query)
-                .Returns(new QueryCollection(queryStringCollection))
-                .Verifiable();
+            request
+                .Query
+                .Returns(new QueryCollection(queryStringCollection));
 
-            starterMOQ
-                .Setup(x => x.StartNewAsync(ORCHESTRATORNAME, null, "MyVideo"))
-                .ReturnsAsync(INSTANCEID)
-              .Verifiable();
+            starter
+                .StartNewAsync(ORCHESTRATORNAME, null, "MyVideo")
+                .Returns(INSTANCEID);
 
-            starterMOQ
-                .Setup(x => x.CreateCheckStatusResponse(It.IsAny<HttpRequest>(), INSTANCEID, false))
+            starter
+                .CreateCheckStatusResponse(Arg.Any<HttpRequest>(), INSTANCEID, false)
                 .Returns(new OkResult());
 
             var result = await HttpFunctions.VideoHttpFunctions.Run(
-                requestMock.Object,
-                starterMOQ.Object,
-                loggerMoq.Object
+                request,
+                starter,
+                logger
             );
 
             result.Should().BeOfType<OkResult>();
 
-            starterMOQ.Verify(x => x.StartNewAsync(It.IsAny<string>(), null, It.IsAny<string>()), Times.Once);
-            starterMOQ.Verify(x => x.CreateCheckStatusResponse(It.IsAny<HttpRequest>(), It.IsAny<string>(), false), Times.Once);
+            await starter.Received().StartNewAsync(Arg.Any<string>(), Arg.Any<string>(), "MyVideo");
+            starter.Received().CreateCheckStatusResponse(Arg.Any<HttpRequest>(), Arg.Any<string>(), false);
         }
     }
 }

@@ -1,7 +1,7 @@
 ﻿using FluentAssertions;
 using Microsoft.Azure.WebJobs.Extensions.DurableTask;
 using Microsoft.Extensions.Logging;
-using Moq;
+using NSubstitute;
 using VideoProcessor.DTO.OutputDtos;
 using VideoProcessor.Orchestrators;
 
@@ -17,40 +17,45 @@ namespace VideoProcessor.Tests.Orchestrator
             const string thumbnailLocation = $"{videoLocation}-thumbnail";
             const string prependLocation = $"{videoLocation}-prepended";
 
-            var loggerMoq = new Mock<ILogger>();
+            var loggerMoq = Substitute.For<ILogger>();
 
-            var orchestratorContext = new Mock<IDurableOrchestrationContext>();
+            var orchestratorContext = Substitute.For<IDurableOrchestrationContext>();
 
             orchestratorContext
-                .Setup(o => o.GetInput<string>())
+                .GetInput<string>()
                 .Returns(videoLocation);
 
             orchestratorContext
-                .Setup(x => x.CallActivityAsync<string>("TranscodeVideo", videoLocation))
-                .ReturnsAsync($"{videoLocation}-transcoded")
-                .Verifiable();
+                .CallActivityAsync<string>("TranscodeVideo", videoLocation)
+                .Returns($"{videoLocation}-transcoded");
 
             orchestratorContext
-                .Setup(x => x.CallActivityAsync<string>("ExtractThumbnail", transcodedLocation))
-                .ReturnsAsync($"{videoLocation}-thumbnail")
-                .Verifiable();
+                .CallActivityAsync<string>("ExtractThumbnail", transcodedLocation)
+                .Returns($"{videoLocation}-thumbnail");
 
             orchestratorContext
-                .Setup(x => x.CallActivityAsync<string>("PrependIntro", thumbnailLocation))
-                .ReturnsAsync($"{videoLocation}-prepended")
-                .Verifiable();
+                .CallActivityAsync<string>("PrependIntro", thumbnailLocation)
+                .Returns($"{videoLocation}-prepended");
 
-            var result = await VideoOrchestrator.ProcessRawVideo(orchestratorContext.Object, loggerMoq.Object);
+            var result = await VideoOrchestrator.ProcessRawVideo(orchestratorContext, loggerMoq);
 
             result.Should().BeOfType<VideoLocations>();
 
-            orchestratorContext.Verify(x => x.CallActivityAsync<string>(It.IsAny<string>(), It.IsAny<string>()), Times.Exactly(3));
+            await orchestratorContext
+                .Received()
+                .CallActivityAsync<string>(Arg.Any<string>(), Arg.Any<string>());
 
-            orchestratorContext.Verify(x => x.CallActivityAsync<string>("TranscodeVideo", videoLocation), Times.Once());
+            await orchestratorContext
+                .Received()
+                .CallActivityAsync<string>("TranscodeVideo", videoLocation);
 
-            orchestratorContext.Verify(x => x.CallActivityAsync<string>("ExtractThumbnail", transcodedLocation), Times.Once());
+            await orchestratorContext
+                .Received()
+                .CallActivityAsync<string>("ExtractThumbnail", transcodedLocation);
 
-            orchestratorContext.Verify(x => x.CallActivityAsync<string>("PrependIntro", thumbnailLocation), Times.Once());
+            await orchestratorContext
+                .Received()
+                .CallActivityAsync<string>("PrependIntro", thumbnailLocation);
 
             result.TranscodeLocation.Should().Be(transcodedLocation);
             result.ThumbnailLocation.Should().Be(thumbnailLocation);

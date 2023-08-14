@@ -1,6 +1,6 @@
 ﻿using FluentAssertions;
 using Microsoft.Extensions.Logging;
-using Moq;
+using NSubstitute;
 using VideoProcessor.ActivityFunctions;
 
 namespace VideoProcessor.Tests.ActivityFunction
@@ -10,9 +10,9 @@ namespace VideoProcessor.Tests.ActivityFunction
         [Test]
         public async Task TranscodeVideo_HappyPath()
         {
-            var loggerMoq = new Mock<ILogger>();
+            var logger = Substitute.For<ILogger>();
 
-            var sut = await VideoProcessing.TranscodeVideo("MyVideo", loggerMoq.Object);
+            var sut = await VideoProcessing.TranscodeVideo("MyVideo", logger);
 
             sut.Should().NotBeNull();
             sut.Should().Be("MyVideo--transcoded");
@@ -22,9 +22,9 @@ namespace VideoProcessor.Tests.ActivityFunction
         [Test]
         public async Task ExtractThumbnail_HappyPath()
         {
-            var loggerMoq = new Mock<ILogger>();
+            var logger = Substitute.For<ILogger>();
 
-            var sut = await VideoProcessing.ExtractThumbnail("MyVideo", loggerMoq.Object);
+            var sut = await VideoProcessing.ExtractThumbnail("MyVideo", logger);
 
             sut.Should().NotBeNull();
             sut.Should().Be("MyVideo--ExtractThumbnail");
@@ -34,9 +34,9 @@ namespace VideoProcessor.Tests.ActivityFunction
         [Test]
         public async Task PrependIntro_HappyPath()
         {
-            var loggerMoq = new Mock<ILogger>();
+            var logger = Substitute.For<ILogger>();
 
-            var sut = await VideoProcessing.PrependIntro("MyVideo", loggerMoq.Object);
+            var sut = await VideoProcessing.PrependIntro("MyVideo", logger);
 
             sut.Should().NotBeNull();
             sut.Should().Be("MyVideo--PrependIntro");
