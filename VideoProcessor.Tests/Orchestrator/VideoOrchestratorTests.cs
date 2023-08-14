@@ -17,7 +17,7 @@ namespace VideoProcessor.Tests.Orchestrator
             const string thumbnailLocation = $"{videoLocation}-thumbnail";
             const string prependLocation = $"{videoLocation}-prepended";
 
-            var loggerMoq = Substitute.For<ILogger>();
+            var logger = Substitute.For<ILogger>();
 
             var orchestratorContext = Substitute.For<IDurableOrchestrationContext>();
 
@@ -37,7 +37,7 @@ namespace VideoProcessor.Tests.Orchestrator
                 .CallActivityAsync<string>("PrependIntro", thumbnailLocation)
                 .Returns($"{videoLocation}-prepended");
 
-            var result = await VideoOrchestrator.ProcessRawVideo(orchestratorContext, loggerMoq);
+            var result = await VideoOrchestrator.ProcessRawVideo(orchestratorContext, logger);
 
             result.Should().BeOfType<VideoLocations>();
 
