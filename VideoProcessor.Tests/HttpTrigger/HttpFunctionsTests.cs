@@ -7,7 +7,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Primitives;
 using Moq;
 
-namespace VideoProcessor.Tests.HttpFunction
+namespace VideoProcessor.Tests.HttpTrigger
 {
     public class HttpFunctionsTests
     {

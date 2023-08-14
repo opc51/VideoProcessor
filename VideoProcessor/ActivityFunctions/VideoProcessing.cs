@@ -8,7 +8,7 @@ namespace VideoProcessor.ActivityFunctions
     /// <summary>
     /// The activity functions used to process a raw video into release format
     /// </summary>
-    public static class VideoProcessorActivityFunctions
+    public static class VideoProcessing
     {
         // To do - depency injection needs to be puut into these Activity Functions
 
@@ -24,7 +24,7 @@ namespace VideoProcessor.ActivityFunctions
         {
             log.LogInformation($"Inside {nameof(TranscodeVideo)} to {inputVideo}.");
             await Task.Delay(2000);
-            return $"{inputVideo}--transcoded.mp4";
+            return $"{inputVideo}--transcoded";
         }
 
         /// <summary>
@@ -38,7 +38,7 @@ namespace VideoProcessor.ActivityFunctions
         {
             log.LogInformation($"Inside {nameof(ExtractThumbnail)} to {inputVideo}.");
             await Task.Delay(2000);
-            return $"{inputVideo}--ExtractThumbnail.mp4";
+            return $"{inputVideo}--ExtractThumbnail";
         }
 
         /// <summary>
@@ -52,7 +52,7 @@ namespace VideoProcessor.ActivityFunctions
         {
             log.LogInformation($"Inside {nameof(PrependIntro)} to {inputVideo}.");
             await Task.Delay(2000);
-            return $"{inputVideo}--PrependIntro.mp4";
+            return $"{inputVideo}--PrependIntro";
         }
     }
 }

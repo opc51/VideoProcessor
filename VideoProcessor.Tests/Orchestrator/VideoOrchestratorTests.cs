@@ -1,19 +1,14 @@
 ﻿using FluentAssertions;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.Internal;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.WebJobs.Extensions.DurableTask;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Primitives;
 using Moq;
 using VideoProcessor.DTO.OutputDtos;
 using VideoProcessor.Orchestrators;
 
-namespace VideoProcessor.Tests.OrchestratorTests
+namespace VideoProcessor.Tests.Orchestrator
 {
     public class VideoOrchestratorTests
     {
-
         [Test]
         public async Task ProcessRawVideo_HappyPath()
         {
